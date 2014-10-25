@@ -1,9 +1,9 @@
 package org.dongyf.listview01.biz;
 
-import android.net.http.AndroidHttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.dongyf.listview01.entity.BusStatus;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -19,11 +19,12 @@ import java.util.List;
 public class XMLHandler
 {
 
-    public static InputStream downloadXml()
+    public static List<BusStatus> downloadXml()
     {
-        String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0; QQBrowser/7.7.28658.400) like Gecko";
+        List<BusStatus> busStatusList = new ArrayList<BusStatus>();
+      //  String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0; QQBrowser/7.7.28658.400) like Gecko";
         String url = "http://apis.juhe.cn/szbusline/bus?key=c8baa60764b604d148d89c400696345b&dtype=xml&busline=9acf55b9-8406-40ef-8056-6de249174ee0";
-        AndroidHttpClient httpClient = AndroidHttpClient.newInstance(userAgent);
+        DefaultHttpClient httpClient = new DefaultHttpClient();
         InputStream inputStream = null;
         try
         {
@@ -31,22 +32,28 @@ public class XMLHandler
             HttpResponse response = httpClient.execute(httpGet);
             HttpEntity entity = response.getEntity();
             inputStream = entity.getContent();
-
+            busStatusList = parserXml(inputStream);
         } catch (IOException e)
         {
             e.printStackTrace();
         } finally
         {
-            httpClient.close();
+            try
+            {
+                inputStream.close();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
         }
-        return inputStream;
+        return busStatusList;/**/
     }
 
-    public static List<BusStatus> parserXml()
+    public static List<BusStatus> parserXml(InputStream inputStream)
     {
         List<BusStatus> busStatusList = null;
-        InputStream inputStream = downloadXml();
-        System.out.println(inputStream.toString());
+
         try
         {
             BusStatus busStatus = null;
